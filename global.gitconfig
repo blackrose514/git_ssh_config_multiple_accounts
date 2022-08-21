@@ -1,0 +1,7 @@
+[init]
+    defaultBranch = main
+[user]
+    name = <acc1_name>
+    email = <acc1_email>
+[includeIf "gitdir:~/projects/<acc2_name>/"]
+    path = ~/projects/<acc2_name>/<acc2_name>.gitconfig
