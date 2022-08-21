@@ -1,72 +1,48 @@
 #! /bin/bash
 
-TAB="$(printf '\t')"
+read -p "Enter 1st user name: " acc1_name
+read -p "Enter 1st user email: " acc1_email
+read -p "Enter 2nd user name: " acc2_name
+read -p "Enter 2nd user email: " acc2_email
 
-read -p "Enter 1st user name: " user1_name
-read -p "Enter 1st user email: " user1_email
-read -p "Enter 2nd user name: " user2_name
-read -p "Enter 2nd user email: " user2_email
-
-mkdir -p "$HOME/projects/$user1_name"
-mkdir -p "$HOME/projects/$user2_name"
+mkdir -p "$HOME/projects/$acc1_name"
+mkdir -p "$HOME/projects/$acc2_name"
 
 # Generate SSH keys
-ssh-keygen -t ed25519 -C $user1_email -N "" -f "$HOME/.ssh/id_ed25519"
-ssh-keygen -t ed25519 -C $user2_email -N "" -f "$HOME/.ssh/id_ed25519.$user2_name"
+ssh-keygen -t ed25519 -C $acc1_email -N "" -f "$HOME/.ssh/github-$acc1_name"
+ssh-keygen -t ed25519 -C $acc2_email -N "" -f "$HOME/.ssh/github-$acc2_name"
 
 # Start ssh-agent
 eval "$(ssh-agent -s)"
 
 # Add SSH private keys to ssh-agent
-ssh-add ~/.ssh/id_ed25519
-ssh-add "$HOME/.ssh/id_ed25519.$user2_name"
+ssh-add "$HOME/.ssh/github-$acc1_name"
+ssh-add "$HOME/.ssh/github-$acc2_name"
 
-# Create .gitconfig for second user
-user2_gitconfig="$HOME/$user2_name.gitconfig"
-touch $user2_gitconfig
-cat > $user2_gitconfig <<EOL
-[user]
-${TAB}user = ${user2_name}
-${TAB}email = ${user2_email}
-[url "git@github.com-${user2_name}:${user2_name}"]
-${TAB}insteadOf = git@github.com:${user2_name}
-EOL
+# Create local .gitconfig for second account
+sed \
+-e "s/<acc2_name>/${acc2_name}/g" \
+-e "s/<acc2_email>/${acc2_email}/g" \
+./acc2.gitconfig > "$HOME/projects/${acc2_name}/${acc2_name}.gitconfig"
 
-# Edit global .gitconfig
-touch ~/.gitconfig
-cat > ~/.gitconfig <<EOL
-[init]
-${TAB}defaultBranch = main
-[user]
-${TAB}name = ${user1_name}
-${TAB}email = ${user1_email}
-[includeIf "gitdir:~/projects/${user2_name}/"]
-${TAB}path = ${user2_gitconfig}
-EOL
+# Create global .gitconfig
+sed \
+-e "s/<acc1_name>/${acc1_name}/g" \
+-e "s/<acc1_email>/${acc1_email}/g" \
+-e "s/<acc2_name>/${acc2_name}/g" \
+-e "s/<acc2_email>/${acc2_email}/g" \
+./global.gitconfig > ~/.gitconfig
 
 # Edit SSH config
-touch ~/.ssh/config
-cat > ~/.ssh/config <<EOL
-# ${user1_name}
-Host github.com
-${TAB}HostName github.com
-${TAB}User ${user1_name}
-${TAB}IdentityFile ~/.ssh/id_ed25519
-${TAB}IdentitiesOnly yes
-${TAB}AddKeysToAgent yes
-
-# ${user2_name}
-Host github.com-${user2_name}
-${TAB}HostName github.com
-${TAB}User ${user2_name}
-${TAB}IdentityFile ~/.ssh/id_ed25519.${user2_name}
-${TAB}IdentitiesOnly yes
-${TAB}AddKeysToAgent yes
-EOL
+sed \
+-e "s/<acc1_name>/${acc1_name}/g" \
+-e "s/<acc2_name>/${acc2_name}/g" \
+./config > ~/.ssh/config
 
 echo ""
-echo "Public key for 1st user:"
-cat ~/.ssh/id_ed25519.pub
+echo "Public key for 1st account (${acc1_name}):"
+cat "$HOME/.ssh/github-${acc1_name}.pub"
 
-echo "Public key for 2nd user:"
-cat "$HOME/.ssh/id_ed25519.${user2_name}.pub"
+echo "Public key for 2nd account (${acc2_name}):"
+cat "$HOME/.ssh/github-${acc2_name}.pub"
+
