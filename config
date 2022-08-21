@@ -1,0 +1,15 @@
+# <acc1_name>
+Host github.com
+    HostName github.com
+    User <acc1_name>
+    IdentityFile ~/.ssh/github-<acc1_name>
+    IdentitiesOnly yes
+    AddKeysToAgent yes
+
+# <acc2_name>
+Host github.com-<acc2_name>
+    HostName github.com
+    User <acc2_name>
+    IdentityFile ~/.ssh/github-<acc2_name>
+    IdentitiesOnly yes
+    AddKeysToAgent yes
