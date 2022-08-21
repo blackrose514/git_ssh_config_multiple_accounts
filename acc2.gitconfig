@@ -1,0 +1,5 @@
+[user]
+    user = <acc2_name>
+    email = <acc2_email>
+[url "git@github.com-<acc2_name>:<acc2_name>"]
+    insteadOf = git@github.com:<acc2_name>
